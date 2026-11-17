@@ -1,6 +1,12 @@
-import { Link, Outlet } from 'react-router-dom';
+import auth from './Auth/Auth';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 
-const Nav = () => {
+export default function Nav() {
+  const { isAuthenticated, login, logout } = auth;
+
+  // Re-renders on route change
+  useLocation();
+
   return (
     <>
       <nav>
@@ -11,6 +17,13 @@ const Nav = () => {
           <li>
             <Link to="/profile">Profile</Link>
           </li>
+          <li>
+            {isAuthenticated() ? (
+              <button onClick={logout}>Log Out</button>
+            ) : (
+              <button onClick={login}>Login</button>
+            )}
+          </li>
         </ul>
       </nav>
 
@@ -19,6 +32,4 @@ const Nav = () => {
       </div>
     </>
   );
-};
-
-export default Nav;
+}

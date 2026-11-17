@@ -31,6 +31,16 @@ export const auth = {
     localStorage.setItem('expires_at', expiresAt);
   },
 
+  logout(): void {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('id_token');
+    localStorage.removeItem('expires_at');
+    auth0Client.logout({
+      clientID: import.meta.env.VITE_AUTH0_CLIENT_ID,
+      returnTo: 'http://localhost:5173/',
+    });
+  },
+
   isAuthenticated: (): boolean =>
     Date.now() < JSON.parse(localStorage.getItem('expires_at') || '0'),
 
