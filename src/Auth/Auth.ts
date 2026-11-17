@@ -10,33 +10,29 @@ const auth0Client: WebAuth = new auth0.WebAuth({
 });
 
 export const auth = {
-  login(): void {
-    auth0Client.authorize();
-  },
+  login: () => auth0Client.authorize(),
 
   handleAuthentication(navigate: (path: string) => void): void {
-    auth0Client.parseHash((err, authResult) => {
-      if (authResult?.accessToken && authResult?.idToken) {
-        this.setSession(authResult);
-        navigate('/');
+    auth0Client.parseHash((err, res) => {
+      if (res?.accessToken && res?.idToken) {
+        this.setSession(res);
       } else if (err) {
-        navigate('/');
-        alert(`Error: ${err.error}. Check the console for further details.`);
-        console.log(err);
+        alert(`Error: ${err.error}. Check console.`);
+        console.error(err);
       }
+      navigate('/');
     });
   },
 
-  setSession(authResult: Auth0DecodedHash): void {
-    console.log(authResult);
-    const expiresAt = JSON.stringify(
-      (authResult.expiresIn ?? 0) * 1000 + new Date().getTime(),
-    );
-
-    localStorage.setItem('access_token', authResult.accessToken!);
-    localStorage.setItem('id_token', authResult.idToken!);
+  setSession(res: Auth0DecodedHash): void {
+    const expiresAt = JSON.stringify((res.expiresIn ?? 0) * 1000 + Date.now());
+    localStorage.setItem('access_token', res.accessToken!);
+    localStorage.setItem('id_token', res.idToken!);
     localStorage.setItem('expires_at', expiresAt);
   },
+
+  isAuthenticated: (): boolean =>
+    Date.now() < JSON.parse(localStorage.getItem('expires_at') || '0'),
 
   client: auth0Client,
 };
