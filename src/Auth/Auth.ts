@@ -1,5 +1,5 @@
 import auth0, { WebAuth } from 'auth0-js';
-import type { Auth0DecodedHash } from 'auth0-js';
+import type { Auth0DecodedHash, Auth0UserProfile } from 'auth0-js';
 
 const auth0Client: WebAuth = new auth0.WebAuth({
   domain: import.meta.env.VITE_AUTH0_DOMAIN,
@@ -8,6 +8,8 @@ const auth0Client: WebAuth = new auth0.WebAuth({
   responseType: 'token id_token',
   scope: 'openid profile email',
 });
+
+let userProfile: Auth0UserProfile | null = null;
 
 export const auth = {
   login: () => auth0Client.authorize(),
@@ -35,6 +37,7 @@ export const auth = {
     localStorage.removeItem('access_token');
     localStorage.removeItem('id_token');
     localStorage.removeItem('expires_at');
+    userProfile = null;
     auth0Client.logout({
       clientID: import.meta.env.VITE_AUTH0_CLIENT_ID,
       returnTo: 'http://localhost:5173/',
@@ -43,6 +46,25 @@ export const auth = {
 
   isAuthenticated: (): boolean =>
     Date.now() < JSON.parse(localStorage.getItem('expires_at') || '0'),
+
+  getAccessToken(): string {
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) throw new Error('No access token found.');
+    return accessToken;
+  },
+
+  getProfile(
+    cb: (
+      profile: Auth0UserProfile | null,
+      err?: auth0.Auth0Error | null,
+    ) => void,
+  ): void {
+    if (userProfile) return cb(userProfile);
+    auth0Client.client.userInfo(this.getAccessToken(), (err, profile) => {
+      if (profile) userProfile = profile;
+      cb(profile, err);
+    });
+  },
 
   client: auth0Client,
 };
