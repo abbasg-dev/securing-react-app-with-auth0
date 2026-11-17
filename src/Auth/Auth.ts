@@ -1,6 +1,6 @@
 import auth0, { WebAuth } from 'auth0-js';
 
-export const auth0Client: WebAuth = new auth0.WebAuth({
+const auth0Client: WebAuth = new auth0.WebAuth({
   domain: import.meta.env.VITE_AUTH0_DOMAIN,
   clientID: import.meta.env.VITE_AUTH0_CLIENT_ID,
   redirectUri: import.meta.env.VITE_AUTH0_CALLBACK_URL,
@@ -8,4 +8,12 @@ export const auth0Client: WebAuth = new auth0.WebAuth({
   scope: 'openid profile email',
 });
 
-export default auth0Client;
+export const auth = {
+  login(): void {
+    auth0Client.authorize();
+  },
+
+  client: auth0Client,
+};
+
+export default auth;
