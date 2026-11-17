@@ -10,9 +10,8 @@ export default function App() {
       <Route path="/" element={<Nav />}>
         <Route index element={<Home />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="/callback" element={<Callback />} />
       </Route>
-
-      <Route path="callback" element={<Callback />} />
     </Routes>
   );
 }
