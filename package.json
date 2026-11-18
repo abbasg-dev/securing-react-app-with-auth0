@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "start": "run-p start:client start:server",
+    "start:client": "vite",
+    "start:server": "node server.js",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
