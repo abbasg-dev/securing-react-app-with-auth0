@@ -3,8 +3,8 @@ import { auth } from 'express-oauth2-jwt-bearer';
 import 'dotenv/config';
 
 const PORT = Number(process.env.API_PORT) || 3000;
-const AUTH0_DOMAIN = process.env.VITE_AUTH0_DOMAIN;
-const AUTH0_AUDIENCE = process.env.VITE_AUTH0_AUDIENCE;
+const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
+const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE;
 
 const app = express();
 

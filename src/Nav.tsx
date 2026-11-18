@@ -20,6 +20,7 @@ export default function Nav() {
           <li>
             <Link to="/public">Public</Link>
           </li>
+          <li>{isAuthenticated() && <Link to="/private">Private</Link>}</li>
           <li>
             {isAuthenticated() ? (
               <button onClick={logout}>Log Out</button>
