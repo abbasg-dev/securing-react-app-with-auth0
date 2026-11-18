@@ -31,7 +31,7 @@ apiRouter.get('/private', checkJwt, (_req: Request, res: Response) => {
 });
 
 apiRouter.get(
-  '/courses',
+  '/course',
   checkJwt,
   requiredScopes('read:courses'),
   (_req: Request, res: Response): void => {

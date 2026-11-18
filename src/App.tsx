@@ -4,6 +4,7 @@ import Profile from './Profile';
 import Nav from './Nav';
 import Public from './Public';
 import Private from './Private';
+import Courses from './Courses';
 import Callback from './Callback';
 import ProtectedRoute from './ProtectedRoute';
 
@@ -26,6 +27,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Private />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="courses"
+          element={
+            <ProtectedRoute requiredScopes={['read:courses']}>
+              <Courses />
             </ProtectedRoute>
           }
         />

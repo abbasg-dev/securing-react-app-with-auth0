@@ -2,7 +2,7 @@ import auth from './Auth/Auth';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
 export default function Nav() {
-  const { isAuthenticated, login, logout } = auth;
+  const { isAuthenticated, userHasScopes, login, logout } = auth;
 
   // Re-renders on route change
   useLocation();
@@ -21,6 +21,11 @@ export default function Nav() {
             <Link to="/public">Public</Link>
           </li>
           <li>{isAuthenticated() && <Link to="/private">Private</Link>}</li>
+          <li>
+            {isAuthenticated() && userHasScopes(['read:courses']) && (
+              <Link to="/courses">Courses</Link>
+            )}
+          </li>
           <li>
             {isAuthenticated() ? (
               <button onClick={logout}>Log Out</button>

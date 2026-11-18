@@ -35,7 +35,7 @@ export const auth = {
     localStorage.setItem('access_token', res.accessToken!);
     localStorage.setItem('id_token', res.idToken!);
     localStorage.setItem('expires_at', expiresAt);
-    localStorage.setItem('scopes', JSON.stringify(scopes));
+    localStorage.setItem('scopes', scopes);
   },
 
   logout(): void {
@@ -74,7 +74,7 @@ export const auth = {
   },
 
   userHasScopes(scopes: string[]): boolean {
-    const grantedScopes = localStorage.getItem('scopes')?.split(' ') ?? [];
+    const grantedScopes = localStorage.getItem('scopes')?.split(/\s+/) ?? [];
     return scopes.every((scope) => grantedScopes.includes(scope));
   },
 
