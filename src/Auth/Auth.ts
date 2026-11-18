@@ -2,6 +2,7 @@ import auth0, { WebAuth } from 'auth0-js';
 import type { Auth0DecodedHash, Auth0UserProfile } from 'auth0-js';
 
 const requestedScopes = 'openid profile email read:courses';
+const REDIRECT_ON_LOGIN = 'redirect_on_login';
 
 const auth0Client: WebAuth = new auth0.WebAuth({
   domain: import.meta.env.VITE_AUTH0_DOMAIN,
@@ -20,11 +21,20 @@ export const auth = {
   handleAuthentication(navigate: (path: string) => void): void {
     auth0Client.parseHash((err, res) => {
       if (res?.accessToken && res?.idToken) {
-        this.setSession(res);
-      } else if (err) {
+        auth.setSession(res);
+        const stored = localStorage.getItem(REDIRECT_ON_LOGIN);
+        const redirectPath = stored
+          ? (JSON.parse(stored).pathname ?? '/')
+          : '/';
+        localStorage.removeItem(REDIRECT_ON_LOGIN);
+        navigate(redirectPath);
+        return;
+      }
+      if (err) {
         alert(`Error: ${err.error}. Check console.`);
         console.error(err);
       }
+      localStorage.removeItem(REDIRECT_ON_LOGIN);
       navigate('/');
     });
   },
@@ -67,7 +77,7 @@ export const auth = {
   ): void {
     if (userProfile) return cb(userProfile);
 
-    auth0Client.client.userInfo(this.getAccessToken(), (err, profile) => {
+    auth0Client.client.userInfo(auth.getAccessToken(), (err, profile) => {
       if (profile) userProfile = profile;
       cb(profile ?? null, err);
     });

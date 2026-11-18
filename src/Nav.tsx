@@ -2,10 +2,16 @@ import auth from './Auth/Auth';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
 export default function Nav() {
+  const location = useLocation();
   const { isAuthenticated, userHasScopes, login, logout } = auth;
 
   // Re-renders on route change
   useLocation();
+
+  const handleLogout = () => {
+    localStorage.setItem('redirect_on_login', JSON.stringify(location));
+    logout();
+  };
 
   return (
     <>
@@ -28,7 +34,7 @@ export default function Nav() {
           </li>
           <li>
             {isAuthenticated() ? (
-              <button onClick={logout}>Log Out</button>
+              <button onClick={handleLogout}>Log Out</button>
             ) : (
               <button onClick={login}>Login</button>
             )}
