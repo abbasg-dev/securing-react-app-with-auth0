@@ -48,9 +48,9 @@ export const auth = {
     Date.now() < JSON.parse(localStorage.getItem('expires_at') || '0'),
 
   getAccessToken(): string {
-    const accessToken = localStorage.getItem('access_token');
-    if (!accessToken) throw new Error('No access token found.');
-    return accessToken;
+    const token = localStorage.getItem('access_token');
+    if (!token) throw new Error('No access token found.');
+    return token;
   },
 
   getProfile(
@@ -60,9 +60,10 @@ export const auth = {
     ) => void,
   ): void {
     if (userProfile) return cb(userProfile);
+
     auth0Client.client.userInfo(this.getAccessToken(), (err, profile) => {
       if (profile) userProfile = profile;
-      cb(profile, err);
+      cb(profile ?? null, err);
     });
   },
 
