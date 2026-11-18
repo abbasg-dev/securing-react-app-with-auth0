@@ -1,4 +1,8 @@
-import express, { type Request, type Response } from 'express';
+import express, {
+  type Request,
+  type Response,
+  type NextFunction,
+} from 'express';
 import { auth, requiredScopes } from 'express-oauth2-jwt-bearer';
 import 'dotenv/config';
 
@@ -37,9 +41,35 @@ apiRouter.get(
   (_req: Request, res: Response): void => {
     res.json({
       courses: [
-        { id: 1, title: 'Securing React 16 Apps with Auth0' },
-        { id: 2, title: 'React 17 Security: Best Practices' },
+        { id: 1, title: 'Securing React Apps with Auth0' },
+        { id: 2, title: 'React Security: Best Practices' },
       ],
+    });
+  },
+);
+
+function checkRole(role: string) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const assignedRoles = req.auth?.payload['http://localhost:3000/roles'];
+
+    if (Array.isArray(assignedRoles) && assignedRoles.includes(role)) {
+      next();
+      return;
+    }
+
+    res.status(403).json({
+      message: 'Insufficient role',
+    });
+  };
+}
+
+apiRouter.get(
+  '/admin',
+  checkJwt,
+  checkRole('admin'),
+  (_req: Request, res: Response): void => {
+    res.json({
+      message: 'Hello from an admin API!',
     });
   },
 );

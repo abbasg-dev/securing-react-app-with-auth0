@@ -6,8 +6,12 @@ export const api = async <T>(url: string): Promise<T> => {
   });
 
   if (!response.ok) {
-    throw new Error('Request failed');
+    const errorBody = await response.text();
+
+    throw new Error(
+      `HTTP ${response.status}: ${errorBody || response.statusText}`,
+    );
   }
 
-  return response.json();
+  return response.json() as Promise<T>;
 };
