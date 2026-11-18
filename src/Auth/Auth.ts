@@ -1,13 +1,15 @@
 import auth0, { WebAuth } from 'auth0-js';
 import type { Auth0DecodedHash, Auth0UserProfile } from 'auth0-js';
 
+const requestedScopes = 'openid profile email read:courses';
+
 const auth0Client: WebAuth = new auth0.WebAuth({
   domain: import.meta.env.VITE_AUTH0_DOMAIN,
   clientID: import.meta.env.VITE_AUTH0_CLIENT_ID,
   redirectUri: import.meta.env.VITE_AUTH0_CALLBACK_URL,
   audience: import.meta.env.VITE_AUTH0_AUDIENCE,
   responseType: 'token id_token',
-  scope: 'openid profile email',
+  scope: requestedScopes,
 });
 
 let userProfile: Auth0UserProfile | null = null;
@@ -29,15 +31,18 @@ export const auth = {
 
   setSession(res: Auth0DecodedHash): void {
     const expiresAt = JSON.stringify((res.expiresIn ?? 0) * 1000 + Date.now());
+    const scopes = res.scope || requestedScopes || '';
     localStorage.setItem('access_token', res.accessToken!);
     localStorage.setItem('id_token', res.idToken!);
     localStorage.setItem('expires_at', expiresAt);
+    localStorage.setItem('scopes', JSON.stringify(scopes));
   },
 
   logout(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('id_token');
     localStorage.removeItem('expires_at');
+    localStorage.removeItem('scopes');
     userProfile = null;
     auth0Client.logout({
       clientID: import.meta.env.VITE_AUTH0_CLIENT_ID,
@@ -66,6 +71,11 @@ export const auth = {
       if (profile) userProfile = profile;
       cb(profile ?? null, err);
     });
+  },
+
+  userHasScopes(scopes: string[]): boolean {
+    const grantedScopes = localStorage.getItem('scopes')?.split(' ') ?? [];
+    return scopes.every((scope) => grantedScopes.includes(scope));
   },
 
   client: auth0Client,
