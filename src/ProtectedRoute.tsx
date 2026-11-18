@@ -1,18 +1,31 @@
 import type { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
 import auth from './Auth/Auth';
 
 interface ProtectedRouteProps {
-  children: ReactNode;
-  requiredScopes?: string[];
+  readonly children: ReactNode;
+  readonly requiredScopes?: string[];
 }
 
 export default function ProtectedRoute({
   children,
   requiredScopes = [],
 }: ProtectedRouteProps) {
-  const isAuthorized =
-    auth.isAuthenticated() && auth.userHasScopes(requiredScopes);
+  // 1. Redirect to login if not logged in
+  if (!auth.isAuthenticated()) {
+    auth.login();
+    return null;
+  }
 
-  return isAuthorized ? children : <Navigate to="/" replace />;
+  // 2. Display message if user lacks required scope(s)
+  if (requiredScopes.length > 0 && !auth.userHasScopes(requiredScopes)) {
+    return (
+      <h1>
+        Unauthorized - You need the following scope(s) to view this page:{' '}
+        {requiredScopes.join(',')}.
+      </h1>
+    );
+  }
+
+  // 3. Render protected children
+  return <>{children}</>;
 }
