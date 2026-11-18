@@ -1,24 +1,25 @@
-import express from 'express';
+import express, { type Request, type Response } from 'express';
+
 import 'dotenv/config';
 
-const PORT = Number(process.env.VITE_API_PORT) || 3000;
-const AUTH0_AUDIENCE = process.env.VITE_AUTH0_AUDIENCE;
+const PORT = Number(process.env.API_PORT) || 3000;
+const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE;
 
 const app = express();
 
 // Middleware
 app.use(express.json());
 
-// API routes
+// Routes
 const apiRouter = express.Router();
 
-apiRouter.get('/public', (_req, res) => {
+apiRouter.get('/public', (_req: Request, res: Response): void => {
   res.status(200).json({
     message: 'Hello from a public API!',
   });
 });
 
-// Mount API routes
+// Register API routes
 app.use('/api', apiRouter);
 
 // Start server
