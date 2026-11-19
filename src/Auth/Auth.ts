@@ -50,6 +50,7 @@ export const auth = {
     _scopes = res.scope || requestedScopes || '';
     _accessToken = res.accessToken ?? null;
     _idToken = res.idToken ?? null;
+    auth.scheduleTokenRenewal();
   },
 
   logout(): void {
@@ -85,6 +86,28 @@ export const auth = {
   userHasScopes(scopes: string[]): boolean {
     const grantedScopes = _scopes?.split(/\s+/) ?? [];
     return scopes.every((scope) => grantedScopes.includes(scope));
+  },
+
+  renewToken(
+    cb?: (err: auth0.Auth0Error | null, result?: Auth0DecodedHash) => void,
+  ): void {
+    auth0Client.checkSession({}, (err, res) => {
+      if (err) {
+        console.error(
+          `Silent renewal error: ${err.error} - ${err.error_description}`,
+        );
+      } else if (res) {
+        auth.setSession(res);
+      }
+      cb?.(err, res);
+    });
+  },
+
+  scheduleTokenRenewal(): void {
+    const delay = _expiresAt - Date.now();
+    if (delay > 0) {
+      setTimeout(() => auth.renewToken(), delay);
+    }
   },
 
   client: auth0Client,
