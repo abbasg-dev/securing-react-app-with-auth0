@@ -4,6 +4,12 @@ import type { Auth0DecodedHash, Auth0UserProfile } from 'auth0-js';
 const requestedScopes = 'openid profile email read:courses';
 const REDIRECT_ON_LOGIN = 'redirect_on_login';
 
+// Stored in module scope as private state
+let _idToken: string | null = null;
+let _accessToken: string | null = null;
+let _scopes: string | null = null;
+let _expiresAt: number = 0;
+
 const auth0Client: WebAuth = new auth0.WebAuth({
   domain: import.meta.env.VITE_AUTH0_DOMAIN,
   clientID: import.meta.env.VITE_AUTH0_CLIENT_ID,
@@ -40,33 +46,26 @@ export const auth = {
   },
 
   setSession(res: Auth0DecodedHash): void {
-    const expiresAt = JSON.stringify((res.expiresIn ?? 0) * 1000 + Date.now());
-    const scopes = res.scope || requestedScopes || '';
-    localStorage.setItem('access_token', res.accessToken!);
-    localStorage.setItem('id_token', res.idToken!);
-    localStorage.setItem('expires_at', expiresAt);
-    localStorage.setItem('scopes', scopes);
+    _expiresAt = (res.expiresIn ?? 0) * 1000 + Date.now();
+    _scopes = res.scope || requestedScopes || '';
+    _accessToken = res.accessToken ?? null;
+    _idToken = res.idToken ?? null;
   },
 
   logout(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('id_token');
-    localStorage.removeItem('expires_at');
-    localStorage.removeItem('scopes');
-    userProfile = null;
     auth0Client.logout({
       clientID: import.meta.env.VITE_AUTH0_CLIENT_ID,
       returnTo: 'http://localhost:5173/',
     });
   },
 
-  isAuthenticated: (): boolean =>
-    Date.now() < JSON.parse(localStorage.getItem('expires_at') || '0'),
+  isAuthenticated: (): boolean => {
+    return Date.now() < _expiresAt;
+  },
 
   getAccessToken(): string {
-    const token = localStorage.getItem('access_token');
-    if (!token) throw new Error('No access token found.');
-    return token;
+    if (!_accessToken) throw new Error('No access token found.');
+    return _accessToken;
   },
 
   getProfile(
@@ -84,7 +83,7 @@ export const auth = {
   },
 
   userHasScopes(scopes: string[]): boolean {
-    const grantedScopes = localStorage.getItem('scopes')?.split(/\s+/) ?? [];
+    const grantedScopes = _scopes?.split(/\s+/) ?? [];
     return scopes.every((scope) => grantedScopes.includes(scope));
   },
 

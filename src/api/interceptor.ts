@@ -1,17 +1,17 @@
-export const api = async <T>(url: string): Promise<T> => {
-  const token = localStorage.getItem('access_token');
+import auth from '../Auth/Auth';
 
-  const response = await fetch(url, {
+export const api = async <T>(url: string): Promise<T> => {
+  const token = auth.isAuthenticated() ? auth.getAccessToken() : null;
+
+  const res = await fetch(url, {
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-
+  if (!res.ok) {
     throw new Error(
-      `HTTP ${response.status}: ${errorBody || response.statusText}`,
+      `HTTP ${res.status}: ${(await res.text()) || res.statusText}`,
     );
   }
 
-  return response.json() as Promise<T>;
+  return res.json() as Promise<T>;
 };
